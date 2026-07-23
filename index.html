@@ -1,0 +1,2868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aurora AI Interview Simulator</title>
+
+<!-- External Libraries -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hark@1.2.0/hark.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<!-- Tailwind Config -->
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' },
+        dark: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a', 950: '#020617' }
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['SF Pro Display', 'Inter', 'system-ui', 'sans-serif']
+      }
+    }
+  }
+};
+</script>
+
+<!-- Global Styles -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #020617;
+  color: #f1f5f9;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+/* Glassmorphism */
+.glass {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+.glass-strong {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+.glass-light {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease infinite;
+}
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Animated Gradient Background */
+.animated-gradient {
+  background: linear-gradient(135deg, #020617 0%, #1e1b4b 25%, #312e81 50%, #1e1b4b 75%, #020617 100%);
+  background-size: 400% 400%;
+  animation: gradient-flow 15s ease infinite;
+}
+@keyframes gradient-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Glow Effects */
+.glow-indigo { box-shadow: 0 0 40px rgba(99, 102, 241, 0.5); }
+.glow-purple { box-shadow: 0 0 40px rgba(192, 132, 252, 0.5); }
+.text-glow { text-shadow: 0 0 20px rgba(99, 102, 241, 0.6); }
+
+/* Pulse Ring */
+.pulse-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(99, 102, 241, 0.6);
+  animation: pulse-ring 2s ease-out infinite;
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Waveform */
+.waveform-bar {
+  display: inline-block;
+  width: 3px;
+  margin: 0 1px;
+  background: linear-gradient(180deg, #818cf8, #c084fc);
+  border-radius: 2px;
+  transition: height 0.1s ease;
+}
+
+/* Float Animation */
+.float { animation: float 6s ease-in-out infinite; }
+.float-delay-1 { animation: float 6s ease-in-out infinite; animation-delay: 1s; }
+.float-delay-2 { animation: float 6s ease-in-out infinite; animation-delay: 2s; }
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+/* Pulse Soft */
+.pulse-soft { animation: pulse-soft 3s ease-in-out infinite; }
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Shimmer */
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Recording Dot */
+.recording-dot {
+  width: 12px;
+  height: 12px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(99, 102, 241, 0.2);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Step Indicator */
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  background: rgba(15, 23, 42, 0.6);
+}
+.step-circle.active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: transparent;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+}
+.step-circle.completed {
+  background: #10b981;
+  border-color: transparent;
+}
+
+/* Card Hover */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* Selection Card */
+.selection-card {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.selection-card.selected {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+}
+.selection-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: #6366f1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Range Slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 5px;
+  height: 8px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+}
+
+/* Button Primary */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+}
+.btn-primary:hover::before { left: 100%; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.5); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background: rgba(99, 102, 241, 0.1);
+  color: #c7d2fe;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  cursor: pointer;
+}
+.btn-secondary:hover { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
+
+/* Video Container */
+.video-container {
+  position: relative;
+  background: #0f172a;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+/* Avatar Container */
+.avatar-container {
+  position: relative;
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-container.speaking {
+  box-shadow: 0 0 40px rgba(99, 102, 241, 0.6);
+  border-color: #6366f1;
+}
+
+/* Transcript */
+.transcript-area {
+  scroll-behavior: smooth;
+}
+.transcript-message {
+  animation: message-in 0.4s ease-out;
+}
+@keyframes message-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Progress Bar */
+.progress-bar {
+  height: 6px;
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+}
+
+/* Loading Screen */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: #020617;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transition: opacity 0.5s ease;
+}
+
+/* Confetti */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: #6366f1;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Page transitions */
+.page {
+  display: none;
+  animation: page-in 0.6s ease-out;
+}
+.page.active { display: block; }
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-backdrop.active { display: flex; }
+
+/* Tooltip */
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f172a;
+  color: #c7d2fe;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  margin-bottom: 6px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .video-grid { grid-template-columns: 1fr !important; }
+  .sidebar { display: none; }
+  .mobile-menu-btn { display: block !important; }
+}
+
+/* Tab active */
+.tab-btn.active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+}
+
+/* Hide scrollbar for chat */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="loading-screen">
+  <div class="relative">
+    <div class="spinner mx-auto"></div>
+    <div class="mt-6 text-2xl font-bold gradient-text">Aurora AI</div>
+    <div class="text-sm text-slate-400 mt-2" id="loadingText">Initializing Interview Engine...</div>
+  </div>
+</div>
+
+<!-- Three.js Canvas Background -->
+<canvas id="bgCanvas" class="fixed inset-0 w-full h-full -z-10"></canvas>
+
+<!-- Main App Container -->
+<div id="app" class="relative min-h-screen">
+
+  <!-- ============ NAVIGATION BAR ============ -->
+  <nav id="mainNav" class="fixed top-0 left-0 right-0 z-50 glass-strong opacity-0">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex items-center gap-2 cursor-pointer" onclick="App.goTo('landing')">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center glow-indigo">
+            <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+          </div>
+          <span class="text-xl font-bold gradient-text">Aurora</span>
+        </div>
+        
+        <!-- Nav Links -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#features" class="text-sm text-slate-300 hover:text-white transition">Features</a>
+          <a href="#how-it-works" class="text-sm text-slate-300 hover:text-white transition">How it Works</a>
+          <a href="#testimonials" class="text-sm text-slate-300 hover:text-white transition">Reviews</a>
+          <a href="#pricing" class="text-sm text-slate-300 hover:text-white transition">Pricing</a>
+        </div>
+        
+        <!-- Auth Buttons -->
+        <div class="flex items-center gap-3">
+          <button id="authBtn" class="btn-secondary text-sm py-2 px-4">Sign In</button>
+          <button onclick="App.goTo('setup')" class="btn-primary text-sm py-2 px-4 hidden sm:block">Start Free</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ LANDING PAGE ============ -->
+  <section id="landingPage" class="page active">
+    <!-- Hero Section -->
+    <div class="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      <!-- Floating Cards Decoration -->
+      <div class="absolute top-32 left-8 float glass-light rounded-2xl p-4 w-48 hidden lg:block" style="z-index: 1;">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500"></div>
+          <div>
+            <div class="text-xs font-semibold">Sarah M.</div>
+            <div class="text-xs text-slate-400">Score: 94%</div>
+          </div>
+        </div>
+        <div class="text-xs text-slate-300">"Landed my dream job at Google!"</div>
+      </div>
+      
+      <div class="absolute top-48 right-12 float-delay-1 glass-light rounded-2xl p-4 w-52 hidden lg:block" style="z-index: 1;">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs text-slate-300">Confidence</span>
+          <span class="text-xs font-bold text-green-400">98%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:98%"></div></div>
+        <div class="text-xs text-slate-400 mt-2">Live AI Feedback</div>
+      </div>
+      
+      <div class="absolute bottom-32 left-16 float-delay-2 glass-light rounded-2xl p-4 w-44 hidden lg:block" style="z-index: 1;">
+        <div class="text-xs text-slate-300 mb-1">Question 5/10</div>
+        <div class="text-sm font-semibold mb-2">Technical Round</div>
+        <div class="flex gap-1">
+          <div class="w-2 h-8 bg-indigo-500 rounded"></div>
+          <div class="w-2 h-6 bg-indigo-400 rounded"></div>
+          <div class="w-2 h-10 bg-indigo-500 rounded"></div>
+          <div class="w-2 h-4 bg-indigo-300 rounded"></div>
+          <div class="w-2 h-8 bg-indigo-500 rounded"></div>
+        </div>
+      </div>
+      
+      <div class="absolute bottom-48 right-20 float glass-light rounded-2xl p-4 w-40 hidden lg:block" style="z-index: 1;">
+        <div class="text-xs text-slate-400">Grammar Score</div>
+        <div class="text-2xl font-bold gradient-text">A+</div>
+        <div class="text-xs text-green-400">↑ 12% improvement</div>
+      </div>
+      
+      <!-- Hero Content -->
+      <div class="relative z-10 max-w-6xl mx-auto px-4 text-center">
+        <!-- Logo Animation -->
+        <div id="heroLogo" class="mb-6 opacity-0">
+          <div class="inline-flex items-center gap-3 px-4 py-2 glass-light rounded-full">
+            <div class="recording-dot"></div>
+            <span class="text-sm font-medium text-slate-300">AI-Powered Interview Practice</span>
+            <i data-lucide="zap" class="w-4 h-4 text-yellow-400"></i>
+          </div>
+        </div>
+        
+        <!-- Title -->
+        <h1 id="heroTitle" class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 opacity-0">
+          <span class="block">Master Your</span>
+          <span class="block gradient-text">Next Interview</span>
+        </h1>
+        
+        <!-- Subtitle with Typed.js -->
+        <div id="heroSubtitle" class="text-lg sm:text-xl md:text-2xl text-slate-300 mb-4 h-8 opacity-0">
+          <span id="typedText"></span>
+        </div>
+        
+        <p id="heroDesc" class="text-base sm:text-lg text-slate-400 mb-10 max-w-2xl mx-auto opacity-0">
+          Practice with our AI interviewer that thinks, speaks, and analyzes like a real one. Get instant feedback, ace your interview.
+        </p>
+        
+        <!-- CTA Buttons -->
+        <div id="heroCta" class="flex flex-col sm:flex-row gap-4 justify-center mb-12 opacity-0">
+          <button onclick="App.goTo('setup')" class="btn-primary text-lg px-8 py-4 flex items-center justify-center gap-2">
+            <span>Start Interview Now</span>
+            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </button>
+          <button onclick="App.playDemo()" class="btn-secondary text-lg px-8 py-4 flex items-center justify-center gap-2">
+            <i data-lucide="play-circle" class="w-5 h-5"></i>
+            <span>Watch Demo</span>
+          </button>
+        </div>
+        
+        <!-- Stats -->
+        <div id="heroStats" class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto opacity-0">
+          <div class="glass rounded-2xl p-4">
+            <div class="text-3xl font-bold gradient-text">50K+</div>
+            <div class="text-sm text-slate-400">Active Users</div>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <div class="text-3xl font-bold gradient-text">95%</div>
+            <div class="text-sm text-slate-400">Success Rate</div>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <div class="text-3xl font-bold gradient-text">12+</div>
+            <div class="text-sm text-slate-400">Interview Types</div>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <div class="text-3xl font-bold gradient-text">4.9★</div>
+            <div class="text-sm text-slate-400">User Rating</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scroll Indicator -->
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0" id="scrollIndicator">
+        <div class="flex flex-col items-center gap-2 text-slate-400">
+          <span class="text-xs">Scroll to explore</span>
+          <div class="w-6 h-10 border-2 border-slate-400 rounded-full flex justify-center pt-2">
+            <div class="w-1 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Features Section -->
+    <div id="features" class="py-20 px-4 relative">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16 feature-anim">
+          <div class="inline-block px-4 py-1 glass-light rounded-full text-sm text-indigo-300 mb-4">Features</div>
+          <h2 class="text-4xl md:text-5xl font-bold mb-4">Everything You Need to <span class="gradient-text">Succeed</span></h2>
+          <p class="text-slate-400 max-w-2xl mx-auto">Powered by cutting-edge AI to deliver the most realistic interview experience possible.</p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Feature 1 -->
+          <div class="feature-anim glass rounded-3xl p-8 card-hover">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4 glow-indigo">
+              <i data-lucide="mic" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Voice Conversation</h3>
+            <p class="text-slate-400 text-sm">Natural voice interaction with our AI interviewer powered by advanced speech recognition.</p>
+          </div>
+          
+          <!-- Feature 2 -->
+          <div class="feature-anim glass rounded-3xl p-8 card-hover">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-4 glow-purple">
+              <i data-lucide="video" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Video Analysis</h3>
+            <p class="text-slate-400 text-sm">Real-time facial analysis, eye contact tracking, and emotion detection.</p>
+          </div>
+          
+          <!-- Feature 3 -->
+          <div class="feature-anim glass rounded-3xl p-8 card-hover">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-4 glow-indigo">
+              <i data-lucide="file-text" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Resume Parser</h3>
+            <p class="text-slate-400 text-sm">Upload your resume and get personalized questions tailored to your experience.</p>
+          </div>
+          
+          <!-- Feature 4 -->
+          <div class="feature-anim glass rounded-3xl p-8 card-hover">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mb-4 glow-purple">
+              <i data-lucide="brain" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Smart Feedback</h3>
+            <p class="text-slate-400 text-sm">Detailed AI analysis of your communication, grammar, and confidence levels.</p>
+          </div>
+          
+          <!-- Feature 5 -->
+          <div class="feature-anim glass rounded-3xl p-8 card-hover">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-4 glow-indigo">
+              <i data-lucide="users" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Multiple Avatars</h3>
+            <p class="text-slate-400 text-sm">Choose from diverse interviewer personalities to match your target industry.</p>
+          </div>
+          
+          <!-- Feature 6 -->
+          <div class="feature-anim glass rounded-3xl p-8 card-hover">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center mb-4 glow-purple">
+              <i data-lucide="bar-chart-3" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Detailed Reports</h3>
+            <p class="text-slate-400 text-sm">Comprehensive performance reports with actionable improvement suggestions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- How it Works -->
+    <div id="how-it-works" class="py-20 px-4 relative">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <div class="inline-block px-4 py-1 glass-light rounded-full text-sm text-indigo-300 mb-4">Process</div>
+          <h2 class="text-4xl md:text-5xl font-bold mb-4">How It <span class="gradient-text">Works</span></h2>
+        </div>
+        
+        <div class="grid md:grid-cols-4 gap-6">
+          <div class="glass rounded-2xl p-6 text-center relative">
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold">1</div>
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-indigo-500/20 flex items-center justify-center mb-4 mt-4">
+              <i data-lucide="settings" class="w-8 h-8 text-indigo-400"></i>
+            </div>
+            <h3 class="font-bold mb-2">Setup</h3>
+            <p class="text-sm text-slate-400">Choose your interview type and difficulty</p>
+          </div>
+          
+          <div class="glass rounded-2xl p-6 text-center relative">
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold">2</div>
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-purple-500/20 flex items-center justify-center mb-4 mt-4">
+              <i data-lucide="message-square" class="w-8 h-8 text-purple-400"></i>
+            </div>
+            <h3 class="font-bold mb-2">Practice</h3>
+            <p class="text-sm text-slate-400">Engage in realistic interview conversation</p>
+          </div>
+          
+          <div class="glass rounded-2xl p-6 text-center relative">
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold">3</div>
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-pink-500/20 flex items-center justify-center mb-4 mt-4">
+              <i data-lucide="activity" class="w-8 h-8 text-pink-400"></i>
+            </div>
+            <h3 class="font-bold mb-2">Analyze</h3>
+            <p class="text-sm text-slate-400">Get real-time feedback on performance</p>
+          </div>
+          
+          <div class="glass rounded-2xl p-6 text-center relative">
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold">4</div>
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/20 flex items-center justify-center mb-4 mt-4">
+              <i data-lucide="trophy" class="w-8 h-8 text-emerald-400"></i>
+            </div>
+            <h3 class="font-bold mb-2">Improve</h3>
+            <p class="text-sm text-slate-400">Review reports and master interviews</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Testimonials -->
+    <div id="testimonials" class="py-20 px-4">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <div class="inline-block px-4 py-1 glass-light rounded-full text-sm text-indigo-300 mb-4">Testimonials</div>
+          <h2 class="text-4xl md:text-5xl font-bold mb-4">Loved by <span class="gradient-text">Thousands</span></h2>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="glass rounded-2xl p-6">
+            <div class="flex items-center gap-1 mb-3">
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+            </div>
+            <p class="text-slate-300 mb-4">"This AI interviewer is incredible! It felt like a real interview. I got the job at Microsoft after just 3 practice sessions."</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-500"></div>
+              <div>
+                <div class="font-semibold text-sm">Alex Chen</div>
+                <div class="text-xs text-slate-400">Software Engineer @ Microsoft</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="glass rounded-2xl p-6">
+            <div class="flex items-center gap-1 mb-3">
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+            </div>
+            <p class="text-slate-300 mb-4">"The facial analysis and feedback helped me fix my nervous habits. My confidence has skyrocketed!"</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500"></div>
+              <div>
+                <div class="font-semibold text-sm">Priya Sharma</div>
+                <div class="text-xs text-slate-400">Product Manager @ Amazon</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="glass rounded-2xl p-6">
+            <div class="flex items-center gap-1 mb-3">
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+              <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+            </div>
+            <p class="text-slate-300 mb-4">"Best interview prep tool I've used. The detailed reports are pure gold for improvement."</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500"></div>
+              <div>
+                <div class="font-semibold text-sm">Marcus Johnson</div>
+                <div class="text-xs text-slate-400">Data Scientist @ Google</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pricing -->
+    <div id="pricing" class="py-20 px-4">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <div class="inline-block px-4 py-1 glass-light rounded-full text-sm text-indigo-300 mb-4">Pricing</div>
+          <h2 class="text-4xl md:text-5xl font-bold mb-4">Simple, <span class="gradient-text">Transparent</span></h2>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <!-- Free -->
+          <div class="glass rounded-3xl p-8">
+            <h3 class="text-2xl font-bold mb-2">Free</h3>
+            <div class="text-4xl font-bold mb-4">$0<span class="text-lg text-slate-400">/mo</span></div>
+            <ul class="space-y-3 mb-6">
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>3 interviews/month</li>
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>Basic avatars</li>
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>Standard reports</li>
+            </ul>
+            <button onclick="App.goTo('setup')" class="btn-secondary w-full">Get Started</button>
+          </div>
+          
+          <!-- Pro -->
+          <div class="glass rounded-3xl p-8 relative border-indigo-500 border-2 glow-indigo">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full text-xs font-bold">MOST POPULAR</div>
+            <h3 class="text-2xl font-bold mb-2">Pro</h3>
+            <div class="text-4xl font-bold mb-4 gradient-text">$19<span class="text-lg text-slate-400">/mo</span></div>
+            <ul class="space-y-3 mb-6">
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>Unlimited interviews</li>
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>All avatars</li>
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>Advanced analytics</li>
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>Resume parsing</li>
+            </ul>
+            <button onclick="App.goTo('setup')" class="btn-primary w-full">Start Pro</button>
+          </div>
+          
+          <!-- Enterprise -->
+          <div class="glass rounded-3xl p-8">
+            <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
+            <div class="text-4xl font-bold mb-4">$49<span class="text-lg text-slate-400">/mo</span></div>
+            <ul class="space-y-3 mb-6">
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>Everything in Pro</li>
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>Custom avatars</li>
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>API access</li>
+              <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-green-400"></i>Priority support</li>
+            </ul>
+            <button class="btn-secondary w-full">Contact Sales</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="py-12 px-4 border-t border-slate-800">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-4 gap-8 mb-8">
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+              </div>
+              <span class="font-bold gradient-text">Aurora AI</span>
+            </div>
+            <p class="text-sm text-slate-400">Master every interview with AI-powered practice.</p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-3 text-sm">Product</h4>
+            <ul class="space-y-2 text-sm text-slate-400">
+              <li>Features</li>
+              <li>Pricing</li>
+              <li>API</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-3 text-sm">Company</h4>
+            <ul class="space-y-2 text-sm text-slate-400">
+              <li>About</li>
+              <li>Blog</li>
+              <li>Careers</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-3 text-sm">Legal</h4>
+            <ul class="space-y-2 text-sm text-slate-400">
+              <li>Privacy</li>
+              <li>Terms</li>
+              <li>Contact</li>
+            </ul>
+          </div>
+        </div>
+        <div class="text-center text-sm text-slate-400 pt-8 border-t border-slate-800">
+          © 2024 Aurora AI. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ============ SETUP PAGE ============ -->
+  <section id="setupPage" class="page">
+    <div class="min-h-screen pt-24 pb-12 px-4">
+      <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h1 class="text-3xl md:text-4xl font-bold mb-2">Setup Your <span class="gradient-text">Interview</span></h1>
+          <p class="text-slate-400">Configure your practice session in 7 simple steps</p>
+        </div>
+        
+        <!-- Step Indicator -->
+        <div class="flex items-center justify-center gap-2 mb-8 overflow-x-auto pb-2">
+          <div class="step-circle active" data-step="1">1</div>
+          <div class="w-8 h-0.5 bg-slate-700"></div>
+          <div class="step-circle" data-step="2">2</div>
+          <div class="w-8 h-0.5 bg-slate-700"></div>
+          <div class="step-circle" data-step="3">3</div>
+          <div class="w-8 h-0.5 bg-slate-700"></div>
+          <div class="step-circle" data-step="4">4</div>
+          <div class="w-8 h-0.5 bg-slate-700"></div>
+          <div class="step-circle" data-step="5">5</div>
+          <div class="w-8 h-0.5 bg-slate-700"></div>
+          <div class="step-circle" data-step="6">6</div>
+          <div class="w-8 h-0.5 bg-slate-700"></div>
+          <div class="step-circle" data-step="7">7</div>
+        </div>
+        
+        <!-- Setup Card -->
+        <div class="glass rounded-3xl p-6 md:p-10">
+          <!-- Step 1: Interview Type -->
+          <div id="step1" class="setup-step">
+            <h2 class="text-2xl font-bold mb-2">Choose Interview Type</h2>
+            <p class="text-slate-400 mb-6">Select the type of interview you want to practice</p>
+            <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="typeGrid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          
+          <!-- Step 2: Difficulty -->
+          <div id="step2" class="setup-step hidden">
+            <h2 class="text-2xl font-bold mb-2">Select Difficulty</h2>
+            <p class="text-slate-400 mb-6">How challenging should the interview be?</p>
+            <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4" id="difficultyGrid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          
+          <!-- Step 3: Personality -->
+          <div id="step3" class="setup-step hidden">
+            <h2 class="text-2xl font-bold mb-2">Interviewer Personality</h2>
+            <p class="text-slate-400 mb-6">Choose the type of interviewer you'd like to face</p>
+            <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="personalityGrid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          
+          <!-- Step 4: Avatar -->
+          <div id="step4" class="setup-step hidden">
+            <h2 class="text-2xl font-bold mb-2">Select Avatar</h2>
+            <p class="text-slate-400 mb-6">Pick your interviewer</p>
+            <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4" id="avatarGrid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          
+          <!-- Step 5: Voice -->
+          <div id="step5" class="setup-step hidden">
+            <h2 class="text-2xl font-bold mb-2">Voice Settings</h2>
+            <p class="text-slate-400 mb-6">Configure the interviewer's voice</p>
+            <div class="space-y-6">
+              <div>
+                <label class="text-sm font-semibold mb-3 block">Voice Type</label>
+                <div class="grid sm:grid-cols-3 gap-3" id="voiceTypeGrid"></div>
+              </div>
+              <div>
+                <label class="text-sm font-semibold mb-3 block">Accent</label>
+                <div class="grid sm:grid-cols-3 gap-3" id="accentGrid"></div>
+              </div>
+              <div>
+                <label class="text-sm font-semibold mb-3 block">Speed: <span id="speedValue">1x</span></label>
+                <input type="range" min="0.5" max="2" step="0.1" value="1" class="w-full" id="speedRange" />
+                <div class="flex justify-between text-xs text-slate-400 mt-1">
+                  <span>Slow</span><span>Normal</span><span>Fast</span>
+                </div>
+              </div>
+              <button onclick="App.testVoice()" class="btn-secondary flex items-center gap-2">
+                <i data-lucide="volume-2" class="w-4 h-4"></i> Test Voice
+              </button>
+            </div>
+          </div>
+          
+          <!-- Step 6: Duration -->
+          <div id="step6" class="setup-step hidden">
+            <h2 class="text-2xl font-bold mb-2">Duration</h2>
+            <p class="text-slate-400 mb-6">How long should the interview be?</p>
+            <div class="grid sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6" id="durationGrid"></div>
+            <div>
+              <label class="text-sm font-semibold mb-2 block">Or custom (minutes):</label>
+              <input type="number" id="customDuration" min="1" max="120" placeholder="e.g. 25" class="w-full glass rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+          
+          <!-- Step 7: Upload -->
+          <div id="step7" class="setup-step hidden">
+            <h2 class="text-2xl font-bold mb-2">Upload Documents (Optional)</h2>
+            <p class="text-slate-400 mb-6">Add your resume and job description for personalized questions</p>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Resume -->
+              <div>
+                <label class="text-sm font-semibold mb-2 block">Resume / CV</label>
+                <div class="glass-light rounded-2xl p-6 border-2 border-dashed border-slate-600 hover:border-indigo-500 transition cursor-pointer" onclick="document.getElementById('resumeInput').click()">
+                  <input type="file" id="resumeInput" accept=".pdf,.docx,.txt" class="hidden" onchange="App.handleFileUpload('resume', this.files[0])" />
+                  <div class="text-center">
+                    <i data-lucide="file-text" class="w-10 h-10 mx-auto mb-2 text-indigo-400"></i>
+                    <div class="text-sm font-semibold" id="resumeFileName">Click to upload</div>
+                    <div class="text-xs text-slate-400 mt-1">PDF, DOCX, TXT</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Job Description -->
+              <div>
+                <label class="text-sm font-semibold mb-2 block">Job Description</label>
+                <div class="glass-light rounded-2xl p-6 border-2 border-dashed border-slate-600 hover:border-indigo-500 transition cursor-pointer" onclick="document.getElementById('jdInput').click()">
+                  <input type="file" id="jdInput" accept=".pdf,.docx,.txt" class="hidden" onchange="App.handleFileUpload('jd', this.files[0])" />
+                  <div class="text-center">
+                    <i data-lucide="briefcase" class="w-10 h-10 mx-auto mb-2 text-purple-400"></i>
+                    <div class="text-sm font-semibold" id="jdFileName">Click to upload</div>
+                    <div class="text-xs text-slate-400 mt-1">PDF, DOCX, TXT</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <label class="text-sm font-semibold mb-2 block">Or paste text directly:</label>
+              <textarea id="customText" rows="4" placeholder="Paste resume or job description text here..." class="w-full glass rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"></textarea>
+            </div>
+          </div>
+          
+          <!-- Navigation Buttons -->
+          <div class="flex justify-between mt-8 pt-6 border-t border-slate-700">
+            <button id="prevBtn" onclick="App.prevStep()" class="btn-secondary flex items-center gap-2 hidden">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+            </button>
+            <div class="ml-auto flex gap-3">
+              <button id="nextBtn" onclick="App.nextStep()" class="btn-primary flex items-center gap-2">
+                Next <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+              <button id="startBtn" onclick="App.startInterview()" class="btn-primary flex items-center gap-2 hidden">
+                <i data-lucide="play" class="w-4 h-4"></i> Start Interview
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INTERVIEW PAGE ============ -->
+  <section id="interviewPage" class="page">
+    <div class="min-h-screen pt-20 pb-4 px-4">
+      <!-- Top Bar -->
+      <div class="glass-strong rounded-2xl px-4 py-3 mb-4 flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+          <span class="text-sm font-semibold">Live Interview</span>
+          <span class="text-xs text-slate-400" id="interviewType">Technical</span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div class="text-center">
+            <div class="text-xs text-slate-400">Time</div>
+            <div class="text-lg font-bold text-indigo-300" id="timerDisplay">00:00</div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-slate-400">Question</div>
+            <div class="text-lg font-bold text-indigo-300"><span id="questionNum">1</span>/<span id="totalQuestions">10</span></div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-slate-400">Score</div>
+            <div class="text-lg font-bold text-green-400" id="liveScore">--</div>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button onclick="App.togglePause()" class="p-2 glass-light rounded-lg hover:bg-slate-700" data-tooltip="Pause">
+            <i data-lucide="pause" class="w-4 h-4"></i>
+          </button>
+          <button onclick="App.endInterview()" class="px-3 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 text-sm font-semibold">
+            End Interview
+          </button>
+        </div>
+      </div>
+      
+      <!-- Main Grid -->
+      <div class="grid lg:grid-cols-4 gap-4">
+        <!-- Main Video Area -->
+        <div class="lg:col-span-3 space-y-4">
+          <!-- Videos Grid -->
+          <div class="grid md:grid-cols-2 gap-4 video-grid">
+            <!-- AI Interviewer -->
+            <div class="avatar-container aspect-video" id="aiAvatar">
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="relative mx-auto mb-3">
+                    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-4xl font-bold" id="aiAvatarIcon">👨‍💼</div>
+                    <div class="absolute inset-0 rounded-full pulse-ring" id="aiPulse" style="display:none"></div>
+                  </div>
+                  <div class="text-sm font-semibold" id="aiName">AI Interviewer</div>
+                  <div class="text-xs text-slate-300" id="aiStatus">Ready</div>
+                </div>
+              </div>
+              <!-- Avatar overlay info -->
+              <div class="absolute top-3 left-3 glass-light rounded-lg px-2 py-1 text-xs flex items-center gap-2">
+                <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span id="aiNameTop">AI Interviewer</span>
+              </div>
+              <!-- Speaking indicator -->
+              <div class="absolute bottom-3 left-3 right-3 flex justify-center gap-1" id="aiWaveform">
+                <!-- Waveform bars -->
+              </div>
+            </div>
+            
+            <!-- User Webcam -->
+            <div class="video-container aspect-video">
+              <video id="userVideo" autoplay muted playsinline></video>
+              <div class="absolute top-3 left-3 glass-light rounded-lg px-2 py-1 text-xs flex items-center gap-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>You</span>
+              </div>
+              <div class="absolute bottom-3 right-3 glass-light rounded-lg px-2 py-1 text-xs" id="eyeContactIndicator">
+                <span class="text-yellow-400">●</span> Eye Contact: <span id="eyeContactValue">--%</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transcript Area -->
+          <div class="glass rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold flex items-center gap-2">
+                <i data-lucide="message-square" class="w-4 h-4 text-indigo-400"></i>
+                Live Transcript
+              </h3>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="recording-dot"></span>
+                <span class="text-slate-400">Recording</span>
+              </div>
+            </div>
+            <div id="transcriptArea" class="transcript-area h-48 overflow-y-auto hide-scrollbar space-y-2 pr-2">
+              <div class="text-center text-slate-500 text-sm py-8">
+                Interview transcript will appear here...
+              </div>
+            </div>
+          </div>
+          
+          <!-- Controls -->
+          <div class="glass rounded-2xl p-4">
+            <div class="flex items-center justify-center gap-3 flex-wrap">
+              <button onclick="App.toggleMic()" id="micBtn" class="w-12 h-12 rounded-full glass-light hover:bg-slate-700 flex items-center justify-center" data-tooltip="Microphone">
+                <i data-lucide="mic" class="w-5 h-5"></i>
+              </button>
+              <button onclick="App.toggleCamera()" id="camBtn" class="w-12 h-12 rounded-full glass-light hover:bg-slate-700 flex items-center justify-center" data-tooltip="Camera">
+                <i data-lucide="video" class="w-5 h-5"></i>
+              </button>
+              <button onclick="App.skipQuestion()" class="px-4 py-2 glass-light rounded-full hover:bg-slate-700 text-sm" data-tooltip="Skip Question">
+                Skip <i data-lucide="skip-forward" class="w-4 h-4 inline"></i>
+              </button>
+              <button onclick="App.repeatQuestion()" class="px-4 py-2 glass-light rounded-full hover:bg-slate-700 text-sm" data-tooltip="Repeat">
+                <i data-lucide="rotate-ccw" class="w-4 h-4 inline"></i> Repeat
+              </button>
+              <button onclick="App.toggleTextInput()" class="px-4 py-2 glass-light rounded-full hover:bg-slate-700 text-sm" data-tooltip="Type Answer">
+                <i data-lucide="keyboard" class="w-4 h-4 inline"></i> Type
+              </button>
+              <button onclick="App.endInterview()" class="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center" data-tooltip="End Interview">
+                <i data-lucide="phone-off" class="w-5 h-5"></i>
+              </button>
+            </div>
+            
+            <!-- Text Input (Hidden) -->
+            <div id="textInputArea" class="hidden mt-3 flex gap-2">
+              <input type="text" id="textAnswerInput" placeholder="Type your answer..." class="flex-1 glass rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <button onclick="App.sendTextAnswer()" class="btn-primary">Send</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sidebar Stats -->
+        <div class="lg:col-span-1 sidebar space-y-3">
+          <!-- Confidence -->
+          <div class="glass rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-semibold flex items-center gap-1">
+                <i data-lucide="smile" class="w-4 h-4 text-yellow-400"></i>
+                Confidence
+              </span>
+              <span class="text-sm font-bold text-green-400" id="confidenceVal">--%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="confidenceBar" style="width:0%"></div></div>
+          </div>
+          
+          <!-- Speech Speed -->
+          <div class="glass rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-semibold flex items-center gap-1">
+                <i data-lucide="gauge" class="w-4 h-4 text-cyan-400"></i>
+                Speech Speed
+              </span>
+              <span class="text-sm font-bold text-cyan-300" id="speedVal">-- WPM</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="speedBar" style="width:0%; background: linear-gradient(90deg, #06b6d4, #3b82f6)"></div></div>
+          </div>
+          
+          <!-- Grammar -->
+          <div class="glass rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-semibold flex items-center gap-1">
+                <i data-lucide="book-open" class="w-4 h-4 text-pink-400"></i>
+                Grammar
+              </span>
+              <span class="text-sm font-bold text-pink-300" id="grammarVal">--%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="grammarBar" style="width:0%; background: linear-gradient(90deg, #ec4899, #f43f5e)"></div></div>
+          </div>
+          
+          <!-- Emotion -->
+          <div class="glass rounded-2xl p-4">
+            <div class="text-sm font-semibold mb-3 flex items-center gap-1">
+              <i data-lucide="heart" class="w-4 h-4 text-rose-400"></i>
+              Emotion
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs" id="emotionGrid">
+              <div class="text-center p-2 glass-light rounded-lg">
+                <div class="text-base" id="emotionHappy">😊</div>
+                <div class="text-slate-400">Happy</div>
+                <div id="emotionHappyVal" class="font-bold">0%</div>
+              </div>
+              <div class="text-center p-2 glass-light rounded-lg">
+                <div class="text-base">😐</div>
+                <div class="text-slate-400">Neutral</div>
+                <div id="emotionNeutralVal" class="font-bold">0%</div>
+              </div>
+              <div class="text-center p-2 glass-light rounded-lg">
+                <div class="text-base">😮</div>
+                <div class="text-slate-400">Surprised</div>
+                <div id="emotionSurprisedVal" class="font-bold">0%</div>
+              </div>
+              <div class="text-center p-2 glass-light rounded-lg">
+                <div class="text-base">😟</div>
+                <div class="text-slate-400">Confused</div>
+                <div id="emotionSadVal" class="font-bold">0%</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Overall Score -->
+          <div class="glass rounded-2xl p-4 bg-gradient-to-br from-indigo-500/20 to-purple-500/20">
+            <div class="text-sm font-semibold mb-1">Overall Score</div>
+            <div class="text-4xl font-bold gradient-text" id="overallScore">--</div>
+            <div class="text-xs text-slate-400 mt-1">Live Assessment</div>
+          </div>
+          
+          <!-- Status Indicators -->
+          <div class="glass rounded-2xl p-3 space-y-2 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-1"><i data-lucide="mic" class="w-3 h-3"></i> Microphone</span>
+              <span class="text-green-400" id="micStatus">● Active</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-1"><i data-lucide="video" class="w-3 h-3"></i> Camera</span>
+              <span class="text-green-400" id="camStatus">● Active</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-1"><i data-lucide="circle" class="w-3 h-3"></i> Recording</span>
+              <span class="text-red-400">● On</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-1"><i data-lucide="wifi" class="w-3 h-3"></i> Network</span>
+              <span class="text-green-400">● Good</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REPORT PAGE ============ -->
+  <section id="reportPage" class="page">
+    <div class="min-h-screen pt-24 pb-12 px-4">
+      <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 mb-4 glow-indigo">
+            <i data-lucide="trophy" class="w-10 h-10 text-white"></i>
+          </div>
+          <h1 class="text-4xl md:text-5xl font-bold mb-2">Interview <span class="gradient-text">Complete!</span></h1>
+          <p class="text-slate-400">Here's your detailed performance report</p>
+        </div>
+        
+        <!-- Overall Score Card -->
+        <div class="glass rounded-3xl p-8 mb-6 bg-gradient-to-br from-indigo-500/10 to-purple-500/10">
+          <div class="grid md:grid-cols-3 gap-6 items-center">
+            <div class="text-center">
+              <div class="text-6xl font-black gradient-text" id="finalScore">85</div>
+              <div class="text-slate-400 text-sm">Overall Score</div>
+            </div>
+            <div class="md:col-span-2">
+              <canvas id="scoreRadar" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Detailed Scores Grid -->
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+          <div class="glass rounded-2xl p-6">
+            <h3 class="font-bold mb-4 flex items-center gap-2">
+              <i data-lucide="bar-chart" class="w-5 h-5 text-indigo-400"></i>
+              Performance Breakdown
+            </h3>
+            <canvas id="performanceBar" height="250"></canvas>
+          </div>
+          
+          <div class="glass rounded-2xl p-6">
+            <h3 class="font-bold mb-4 flex items-center gap-2">
+              <i data-lucide="trending-up" class="w-5 h-5 text-green-400"></i>
+              Progress Over Time
+            </h3>
+            <canvas id="progressLine" height="250"></canvas>
+          </div>
+        </div>
+        
+        <!-- Feedback Sections -->
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+          <div class="glass rounded-2xl p-6">
+            <h3 class="font-bold mb-4 flex items-center gap-2 text-green-400">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+              Strengths
+            </h3>
+            <ul id="strengthsList" class="space-y-2 text-sm text-slate-300">
+              <!-- Populated by JS -->
+            </ul>
+          </div>
+          
+          <div class="glass rounded-2xl p-6">
+            <h3 class="font-bold mb-4 flex items-center gap-2 text-orange-400">
+              <i data-lucide="alert-circle" class="w-5 h-5"></i>
+              Areas to Improve
+            </h3>
+            <ul id="weaknessesList" class="space-y-2 text-sm text-slate-300">
+              <!-- Populated by JS -->
+            </ul>
+          </div>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+          <div class="glass rounded-2xl p-6">
+            <h3 class="font-bold mb-4 flex items-center gap-2 text-purple-400">
+              <i data-lucide="lightbulb" class="w-5 h-5"></i>
+              Suggestions
+            </h3>
+            <ul id="suggestionsList" class="space-y-2 text-sm text-slate-300">
+              <!-- Populated by JS -->
+            </ul>
+          </div>
+          
+          <div class="glass rounded-2xl p-6">
+            <h3 class="font-bold mb-4 flex items-center gap-2 text-cyan-400">
+              <i data-lucide="bookmark" class="w-5 h-5"></i>
+              Improvement Tips
+            </h3>
+            <ul id="tipsList" class="space-y-2 text-sm text-slate-300">
+              <!-- Populated by JS -->
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 justify-center">
+          <button onclick="App.exportPDF()" class="btn-primary flex items-center gap-2">
+            <i data-lucide="download" class="w-4 h-4"></i> Download PDF Report
+          </button>
+          <button onclick="App.goTo('setup')" class="btn-secondary flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> New Interview
+          </button>
+          <button onclick="App.goTo('landing')" class="btn-secondary flex items-center gap-2">
+            <i data-lucide="home" class="w-4 h-4"></i> Home
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============ AUTH MODAL ============ -->
+<div id="authModal" class="modal-backdrop">
+  <div class="glass-strong rounded-3xl p-8 max-w-md w-full">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold gradient-text" id="authTitle">Sign In</h2>
+      <button onclick="App.closeAuth()" class="p-2 hover:bg-slate-700 rounded-lg">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="text-sm font-semibold mb-2 block">Email</label>
+        <input type="email" id="authEmail" class="w-full glass rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="you@example.com" />
+      </div>
+      <div>
+        <label class="text-sm font-semibold mb-2 block">Password</label>
+        <input type="password" id="authPassword" class="w-full glass rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••" />
+      </div>
+      <button onclick="App.handleAuth()" class="btn-primary w-full" id="authSubmit">Sign In</button>
+      <div class="text-center text-sm text-slate-400">
+        <span id="authSwitchText">Don't have an account?</span>
+        <button onclick="App.toggleAuthMode()" class="text-indigo-400 hover:underline ml-1" id="authSwitchBtn">Sign Up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   AURORA AI - COMPLETE INTERVIEW SIMULATOR
+   Single-file Production Application
+   ============================================================ */
+
+// ============================================================
+// CONFIGURATION (Fill in your own values)
+// ============================================================
+const CONFIG = {
+  // Cloudflare Pages Functions (secrets are stored in Cloudflare dashboard)
+  CONFIG_URL: '/api/config',
+  CHAT_URL: '/api/chat',
+  ANALYZE_URL: '/api/analyze'
+};
+
+
+// ============================================================
+// GLOBAL STATE MANAGER
+// ============================================================
+class StateManager {
+  constructor() {
+    this.state = {
+      currentPage: 'landing',
+      setupStep: 1,
+      interviewConfig: {
+        type: null,
+        difficulty: null,
+        personality: null,
+        avatar: null,
+        voice: { type: 'female', accent: 'american', speed: 1 },
+        duration: 10,
+        resume: '',
+        jobDescription: ''
+      },
+      interview: {
+        active: false,
+        paused: false,
+        startTime: null,
+        elapsedTime: 0,
+        currentQuestion: 1,
+        totalQuestions: 10,
+        messages: [],
+        transcript: [],
+        scores: { communication: 0, grammar: 0, vocabulary: 0, leadership: 0, technical: 0, confidence: 0, eyeContact: 0 },
+        finalScore: 0
+      },
+      user: null,
+      authMode: 'signin'
+    };
+    this.listeners = {};
+  }
+  
+  set(key, value) {
+    this.state[key] = value;
+    this.emit(key, value);
+  }
+  
+  on(event, callback) {
+    if (!this.listeners[event]) this.listeners[event] = [];
+    this.listeners[event].push(callback);
+  }
+  
+  emit(event, data) {
+    if (this.listeners[event]) {
+      this.listeners[event].forEach(cb => cb(data));
+    }
+  }
+  
+  get(key) { return this.state[key]; }
+}
+
+// ============================================================
+// THREE.JS BACKGROUND MANAGER
+// ============================================================
+class BackgroundManager {
+  constructor() {
+    this.canvas = document.getElementById('bgCanvas');
+    this.scene = null;
+    this.camera = null;
+    this.renderer = null;
+    this.particles = null;
+    this.mouseX = 0;
+    this.mouseY = 0;
+  }
+  
+  init() {
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera.position.z = 5;
+    
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: true, antialias: true });
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Create particles
+    const geometry = new THREE.BufferGeometry();
+    const count = 1500;
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 20;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      
+      const color = new THREE.Color();
+      color.setHSL(0.6 + Math.random() * 0.2, 0.7, 0.5 + Math.random() * 0.3);
+      colors[i * 3] = color.r;
+      colors[i * 3 + 1] = color.g;
+      colors[i * 3 + 2] = color.b;
+    }
+    
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    
+    const material = new THREE.PointsMaterial({
+      size: 0.04,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending
+    });
+    
+    this.particles = new THREE.Points(geometry, material);
+    this.scene.add(this.particles);
+    
+    window.addEventListener('resize', () => this.onResize());
+    window.addEventListener('mousemove', (e) => {
+      this.mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      this.mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+    
+    this.animate();
+  }
+  
+  onResize() {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  
+  animate() {
+    requestAnimationFrame(() => this.animate());
+    if (this.particles) {
+      this.particles.rotation.x += 0.0003;
+      this.particles.rotation.y += 0.0005;
+      this.particles.rotation.x += this.mouseY * 0.0005;
+      this.particles.rotation.y += this.mouseX * 0.0005;
+    }
+    this.renderer.render(this.scene, this.camera);
+  }
+}
+
+// ============================================================
+// DATA DEFINITIONS
+// ============================================================
+const DATA = {
+  interviewTypes: [
+    { id: 'job', name: 'Job Interview', icon: 'briefcase', color: 'from-indigo-500 to-purple-600' },
+    { id: 'hr', name: 'HR Interview', icon: 'users', color: 'from-pink-500 to-rose-600' },
+    { id: 'technical', name: 'Technical', icon: 'code', color: 'from-cyan-500 to-blue-600' },
+    { id: 'behavioral', name: 'Behavioral', icon: 'activity', color: 'from-emerald-500 to-teal-600' },
+    { id: 'startup', name: 'Startup', icon: 'rocket', color: 'from-amber-500 to-orange-600' },
+    { id: 'government', name: 'Government', icon: 'building', color: 'from-slate-500 to-gray-600' },
+    { id: 'college', name: 'College Admission', icon: 'graduation-cap', color: 'from-violet-500 to-fuchsia-600' },
+    { id: 'school', name: 'School Viva', icon: 'book-open', color: 'from-lime-500 to-green-600' },
+    { id: 'presentation', name: 'Presentation', icon: 'presentation', color: 'from-red-500 to-pink-600' },
+    { id: 'public', name: 'Public Speaking', icon: 'megaphone', color: 'from-yellow-500 to-amber-600' },
+    { id: 'mock', name: 'Mock Interview', icon: 'clipboard', color: 'from-blue-500 to-indigo-600' },
+    { id: 'custom', name: 'Custom', icon: 'settings', color: 'from-fuchsia-500 to-purple-600' }
+  ],
+  
+  difficulties: [
+    { id: 'easy', name: 'Easy', desc: 'Friendly & supportive', color: 'from-green-500 to-emerald-600', icon: 'smile' },
+    { id: 'moderate', name: 'Moderate', desc: 'Balanced challenge', color: 'from-blue-500 to-cyan-600', icon: 'meh' },
+    { id: 'hard', name: 'Hard', desc: 'Rigorous & demanding', color: 'from-orange-500 to-red-600', icon: 'frown' },
+    { id: 'expert', name: 'Expert', desc: 'Industry-grade depth', color: 'from-purple-500 to-pink-600', icon: 'flame' }
+  ],
+  
+  personalities: [
+    { id: 'friendly', name: 'Friendly', icon: 'smile', color: 'from-yellow-400 to-orange-500' },
+    { id: 'professional', name: 'Professional', icon: 'briefcase', color: 'from-blue-500 to-indigo-600' },
+    { id: 'strict', name: 'Strict', icon: 'shield', color: 'from-red-500 to-rose-600' },
+    { id: 'technical', name: 'Technical Expert', icon: 'cpu', color: 'from-cyan-500 to-blue-600' },
+    { id: 'ceo', name: 'CEO', icon: 'crown', color: 'from-amber-500 to-yellow-600' },
+    { id: 'professor', name: 'Professor', icon: 'book-open', color: 'from-violet-500 to-purple-600' },
+    { id: 'govt', name: 'Govt Officer', icon: 'building', color: 'from-slate-500 to-gray-600' },
+    { id: 'military', name: 'Military Officer', icon: 'shield-alert', color: 'from-green-700 to-emerald-800' },
+    { id: 'investor', name: 'Investor', icon: 'trending-up', color: 'from-emerald-500 to-teal-600' },
+    { id: 'coach', name: 'Supportive Coach', icon: 'heart-handshake', color: 'from-pink-500 to-rose-600' },
+    { id: 'stress', name: 'Stress Interviewer', icon: 'zap', color: 'from-red-600 to-orange-700' }
+  ],
+  
+  avatars: [
+    { id: 'male_hr', name: 'James Wilson', role: 'Male HR', emoji: '👨‍💼', desc: 'Experienced HR Manager', color: 'from-blue-500 to-indigo-600' },
+    { id: 'female_hr', name: 'Sarah Johnson', role: 'Female HR', emoji: '👩‍💼', desc: 'Senior Recruiter', color: 'from-pink-500 to-rose-600' },
+    { id: 'senior_manager', name: 'David Chen', role: 'Senior Manager', emoji: '👨‍💻', desc: 'Engineering Director', color: 'from-cyan-500 to-blue-600' },
+    { id: 'professor', name: 'Dr. Emily Roberts', role: 'Professor', emoji: '👩‍🏫', desc: 'Academic Expert', color: 'from-violet-500 to-purple-600' },
+    { id: 'businesswoman', name: 'Lisa Anderson', role: 'Businesswoman', emoji: '👩‍💼', desc: 'Fortune 500 Executive', color: 'from-amber-500 to-orange-600' },
+    { id: 'engineer', name: 'Mike Peterson', role: 'Engineer', emoji: '👨‍🔬', desc: 'Tech Lead', color: 'from-emerald-500 to-teal-600' },
+    { id: 'robot', name: 'ARIA-X', role: 'AI Robot', emoji: '🤖', desc: 'Next-Gen AI', color: 'from-indigo-500 to-cyan-600' },
+    { id: 'military', name: 'Col. Anderson', role: 'Military Officer', emoji: '🪖', desc: 'Strict & Disciplined', color: 'from-green-700 to-emerald-800' }
+  ],
+  
+  voiceTypes: [
+    { id: 'male', name: 'Male', icon: 'user' },
+    { id: 'female', name: 'Female', icon: 'user-circle' },
+    { id: 'neutral', name: 'Neutral', icon: 'users' }
+  ],
+  
+  accents: [
+    { id: 'american', name: 'American', flag: '🇺🇸' },
+    { id: 'british', name: 'British', flag: '🇬🇧' },
+    { id: 'indian', name: 'Indian', flag: '🇮🇳' },
+    { id: 'australian', name: 'Australian', flag: '🇦🇺' },
+    { id: 'canadian', name: 'Canadian', flag: '🇨🇦' }
+  ],
+  
+  durations: [5, 10, 15, 20, 30, 45, 60]
+};
+
+// ============================================================
+// SETUP MANAGER - Multi-step wizard
+// ============================================================
+class SetupManager {
+  constructor(state) {
+    this.state = state;
+    this.totalSteps = 7;
+  }
+  
+  init() {
+    this.renderTypeGrid();
+    this.renderDifficultyGrid();
+    this.renderPersonalityGrid();
+    this.renderAvatarGrid();
+    this.renderVoiceGrid();
+    this.renderDurationGrid();
+  }
+  
+  renderTypeGrid() {
+    const grid = document.getElementById('typeGrid');
+    grid.innerHTML = DATA.interviewTypes.map(t => `
+      <div class="selection-card glass-light rounded-2xl p-4 text-center" data-id="${t.id}" onclick="App.selectOption('type', '${t.id}', this)">
+        <div class="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${t.color} flex items-center justify-center mb-3">
+          <i data-lucide="${t.icon}" class="w-6 h-6 text-white"></i>
+        </div>
+        <div class="text-sm font-semibold">${t.name}</div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  }
+  
+  renderDifficultyGrid() {
+    const grid = document.getElementById('difficultyGrid');
+    grid.innerHTML = DATA.difficulties.map(d => `
+      <div class="selection-card glass-light rounded-2xl p-5 text-center" data-id="${d.id}" onclick="App.selectOption('difficulty', '${d.id}', this)">
+        <div class="w-14 h-14 mx-auto rounded-xl bg-gradient-to-br ${d.color} flex items-center justify-center mb-3 glow-indigo">
+          <i data-lucide="${d.icon}" class="w-7 h-7 text-white"></i>
+        </div>
+        <div class="text-lg font-bold mb-1">${d.name}</div>
+        <div class="text-xs text-slate-400">${d.desc}</div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  }
+  
+  renderPersonalityGrid() {
+    const grid = document.getElementById('personalityGrid');
+    grid.innerHTML = DATA.personalities.map(p => `
+      <div class="selection-card glass-light rounded-2xl p-4 text-center" data-id="${p.id}" onclick="App.selectOption('personality', '${p.id}', this)">
+        <div class="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${p.color} flex items-center justify-center mb-3">
+          <i data-lucide="${p.icon}" class="w-6 h-6 text-white"></i>
+        </div>
+        <div class="text-sm font-semibold">${p.name}</div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  }
+  
+  renderAvatarGrid() {
+    const grid = document.getElementById('avatarGrid');
+    grid.innerHTML = DATA.avatars.map(a => `
+      <div class="selection-card glass-light rounded-2xl p-4 text-center" data-id="${a.id}" onclick="App.selectOption('avatar', '${a.id}', this)">
+        <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br ${a.color} flex items-center justify-center text-3xl mb-3">
+          ${a.emoji}
+        </div>
+        <div class="text-sm font-bold">${a.name}</div>
+        <div class="text-xs text-indigo-300 mb-1">${a.role}</div>
+        <div class="text-xs text-slate-400">${a.desc}</div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  }
+  
+  renderVoiceGrid() {
+    const voiceGrid = document.getElementById('voiceTypeGrid');
+    voiceGrid.innerHTML = DATA.voiceTypes.map(v => `
+      <div class="selection-card glass-light rounded-xl p-3 text-center ${v.id === 'female' ? 'selected' : ''}" data-id="${v.id}" onclick="App.selectVoice('type', '${v.id}', this)">
+        <i data-lucide="${v.icon}" class="w-5 h-5 mx-auto mb-1"></i>
+        <div class="text-sm font-semibold">${v.name}</div>
+      </div>
+    `).join('');
+    
+    const accentGrid = document.getElementById('accentGrid');
+    accentGrid.innerHTML = DATA.accents.map(a => `
+      <div class="selection-card glass-light rounded-xl p-3 text-center ${a.id === 'american' ? 'selected' : ''}" data-id="${a.id}" onclick="App.selectVoice('accent', '${a.id}', this)">
+        <div class="text-2xl mb-1">${a.flag}</div>
+        <div class="text-sm font-semibold">${a.name}</div>
+      </div>
+    `).join('');
+    
+    lucide.createIcons();
+    
+    const speedRange = document.getElementById('speedRange');
+    speedRange.addEventListener('input', (e) => {
+      document.getElementById('speedValue').textContent = e.target.value + 'x';
+      this.state.state.interviewConfig.voice.speed = parseFloat(e.target.value);
+    });
+  }
+  
+  renderDurationGrid() {
+    const grid = document.getElementById('durationGrid');
+    grid.innerHTML = DATA.durations.map(d => `
+      <div class="selection-card glass-light rounded-xl p-3 text-center" data-id="${d}" onclick="App.selectDuration(${d}, this)">
+        <div class="text-2xl font-bold">${d}</div>
+        <div class="text-xs text-slate-400">min</div>
+      </div>
+    `).join('');
+  }
+  
+  goToStep(step) {
+    document.querySelectorAll('.setup-step').forEach(s => s.classList.add('hidden'));
+    document.getElementById('step' + step).classList.remove('hidden');
+    
+    document.querySelectorAll('.step-circle').forEach((c, i) => {
+      c.classList.remove('active', 'completed');
+      if (i + 1 === step) c.classList.add('active');
+      else if (i + 1 < step) c.classList.add('completed');
+    });
+    
+    document.getElementById('prevBtn').classList.toggle('hidden', step === 1);
+    document.getElementById('nextBtn').classList.toggle('hidden', step === this.totalSteps);
+    document.getElementById('startBtn').classList.toggle('hidden', step !== this.totalSteps);
+    
+    this.state.set('setupStep', step);
+  }
+}
+
+// ============================================================
+// SPEECH MANAGER - Voice input/output
+// ============================================================
+class SpeechManager {
+  constructor() {
+    this.recognition = null;
+    this.synthesis = window.speechSynthesis;
+    this.isListening = false;
+    this.isSpeaking = false;
+    this.silenceTimer = null;
+    this.onResultCallback = null;
+    this.silenceThreshold = 1500; // ms
+    this.voice = null;
+    this.init();
+  }
+  
+  init() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      this.recognition = new SpeechRecognition();
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
+      this.recognition.lang = 'en-US';
+      
+      this.recognition.onresult = (event) => this.handleResult(event);
+      this.recognition.onerror = (e) => console.warn('Speech recognition error:', e.error);
+      this.recognition.onend = () => {
+        if (this.isListening) this.recognition.start();
+      };
+    }
+  }
+  
+  setVoice(type, accent) {
+    const voices = this.synthesis.getVoices();
+    let preferredVoices = voices.filter(v => v.lang.startsWith('en'));
+    
+    if (accent === 'british') preferredVoices = preferredVoices.filter(v => v.lang.includes('GB'));
+    else if (accent === 'indian') preferredVoices = preferredVoices.filter(v => v.lang.includes('IN'));
+    else if (accent === 'australian') preferredVoices = preferredVoices.filter(v => v.lang.includes('AU'));
+    else preferredVoices = preferredVoices.filter(v => v.lang.includes('US') || v.lang.includes('CA'));
+    
+    if (type === 'male') {
+      this.voice = preferredVoices.find(v => /male|david|james|guy|alex/i.test(v.name)) || preferredVoices[0];
+    } else if (type === 'female') {
+      this.voice = preferredVoices.find(v => /female|samantha|victoria|kate|karen|susan/i.test(v.name)) || preferredVoices[1] || preferredVoices[0];
+    } else {
+      this.voice = preferredVoices[0];
+    }
+  }
+  
+  speak(text, onEnd) {
+    if (this.synthesis.speaking) this.synthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (this.voice) utterance.voice = this.voice;
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    utterance.onstart = () => { this.isSpeaking = true; };
+    utterance.onend = () => {
+      this.isSpeaking = false;
+      if (onEnd) onEnd();
+    };
+    
+    this.synthesis.speak(utterance);
+  }
+  
+  stop() {
+    this.synthesis.cancel();
+    this.isSpeaking = false;
+  }
+  
+  startListening(onResult) {
+    this.onResultCallback = onResult;
+    this.isListening = true;
+    if (this.recognition) {
+      try { this.recognition.start(); } catch(e) {}
+    }
+  }
+  
+  stopListening() {
+    this.isListening = false;
+    if (this.recognition) {
+      try { this.recognition.stop(); } catch(e) {}
+    }
+  }
+  
+  handleResult(event) {
+    let finalTranscript = '';
+    let interimTranscript = '';
+    
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) finalTranscript += transcript;
+      else interimTranscript += transcript;
+    }
+    
+    if (this.onResultCallback) {
+      this.onResultCallback(finalTranscript, interimTranscript);
+    }
+    
+    // Reset silence timer on speech
+    if (this.silenceTimer) clearTimeout(this.silenceTimer);
+    if (finalTranscript || interimTranscript) {
+      this.silenceTimer = setTimeout(() => {
+        if (this.onSilenceCallback) this.onSilenceCallback(finalTranscript);
+      }, this.silenceThreshold);
+    }
+  }
+  
+  onSilence(callback) {
+    this.onSilenceCallback = callback;
+  }
+}
+
+// ============================================================
+// AI MANAGER - Gemini API integration
+// ============================================================
+class AIManager {
+  constructor() {
+    this.apiKey = CONFIG.GEMINI_API_KEY;
+    this.apiUrl = CONFIG.GEMINI_API_URL;
+    this.conversationHistory = [];
+  }
+  
+  buildSystemPrompt(config) {
+    const typeMap = {
+      job: 'job interview', hr: 'HR interview', technical: 'technical interview',
+      behavioral: 'behavioral interview', startup: 'startup interview', government: 'government job interview',
+      college: 'college admission interview', school: 'school viva', presentation: 'presentation practice',
+      public: 'public speaking', mock: 'mock interview', custom: 'general interview'
+    };
+    
+    return `You are a professional ${typeMap[config.type] || 'interview'} interviewer with the personality of a ${config.personality} interviewer. The interview difficulty is ${config.difficulty}.
+
+Your role:
+- Conduct a realistic ${config.difficulty} level interview
+- Ask relevant, insightful questions one at a time
+- Listen carefully to the candidate's responses
+- Ask intelligent follow-up questions
+- Analyze the quality of answers
+- Adapt difficulty based on performance
+- Never repeat questions
+- Keep responses concise (under 50 words typically, except when explaining)
+- Be conversational and natural
+
+${config.resume ? `Candidate's Resume: ${config.resume.substring(0, 2000)}` : ''}
+${config.jobDescription ? `Job Description: ${config.jobDescription.substring(0, 2000)}` : ''}
+
+Start with a warm greeting and your first question. Keep it short and natural like a real interviewer would.`;
+  }
+  
+// i changed this from ai
+
+async sendMessage(userMessage, config) {
+  // ... existing code that builds conversationHistory ...
+  
+  try {
+    const response = await fetch(CONFIG.CHAT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: this.conversationHistory
+      })
+    });
+    
+    if (!response.ok) throw new Error('API request failed');
+    const data = await response.json();
+    const aiText = data.candidates[0].content.parts[0].text;
+    
+    this.conversationHistory.push({
+      role: 'model',
+      parts: [{ text: aiText }]
+    });
+    
+    return aiText;
+  } catch (error) {
+    console.error('AI Error:', error);
+    return this.getMockResponse(userMessage, config);
+  }
+}
+
+  
+  getMockResponse(userMessage, config) {
+    // Demo responses when API key not configured
+    const responses = [
+      "That's an interesting point. Could you elaborate more on that experience?",
+      "I see. Now, tell me about a challenging situation you faced and how you handled it.",
+      "Good answer. What would you say is your greatest professional achievement so far?",
+      "Interesting. Where do you see yourself in five years?",
+      "Let's dive deeper. What motivates you in your career?",
+      "Thanks for sharing that. How do you handle working under pressure?",
+      "I appreciate your honesty. What are your salary expectations?",
+      "Good. Now tell me about a time you failed and what you learned from it."
+    ];
+    
+    const response = responses[Math.floor(Math.random() * responses.length)];
+    this.conversationHistory.push({
+      role: 'model',
+      parts: [{ text: response }]
+    });
+    return response;
+  }
+  
+async analyzeResponse(userMessage, config) {
+  try {
+    const response = await fetch(CONFIG.ANALYZE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: userMessage })
+    });
+    
+    const data = await response.json();
+    const text = data.candidates[0].content.parts[0].text;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) return JSON.parse(jsonMatch[0]);
+    return this.getMockAnalysis(userMessage);
+  } catch (e) {
+    return this.getMockAnalysis(userMessage);
+  }
+}
+
+  
+  getMockAnalysis(message) {
+    const words = message.split(' ').length;
+    return {
+      communication: Math.min(95, 50 + words),
+      grammar: 75 + Math.floor(Math.random() * 20),
+      vocabulary: 70 + Math.floor(Math.random() * 25),
+      confidence: 65 + Math.floor(Math.random() * 30),
+      feedback: 'Good response with relevant points.'
+    };
+  }
+  
+  reset() {
+    this.conversationHistory = [];
+  }
+}
+
+// ============================================================
+// FILE PARSER - PDF, DOCX, TXT
+// ============================================================
+class FileParser {
+  async parseFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    
+    if (ext === 'pdf') return await this.parsePDF(file);
+    if (ext === 'docx') return await this.parseDOCX(file);
+    if (ext === 'txt') return await this.parseTXT(file);
+    throw new Error('Unsupported file type');
+  }
+  
+  async parsePDF(file) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(item => item.str).join(' ') + '\n';
+    }
+    return text;
+  }
+  
+  async parseDOCX(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  }
+  
+  async parseTXT(file) {
+    return await file.text();
+  }
+}
+
+// ============================================================
+// VISION MANAGER - Face detection and emotion
+// ============================================================
+class VisionManager {
+  constructor() {
+    this.faceMesh = null;
+    this.modelsLoaded = false;
+    this.onMetricsUpdate = null;
+    this.eyeContact = 0;
+    this.headPose = { pitch: 0, yaw: 0, roll: 0 };
+    this.emotions = { happy: 0, neutral: 0, sad: 0, surprised: 0, angry: 0 };
+  }
+  
+  async init(videoElement) {
+    this.videoElement = videoElement;
+    // Try loading face-api models (optional, will gracefully fail)
+    try {
+      await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+      this.modelsLoaded = true;
+      this.startFaceApiDetection();
+    } catch (e) {
+      console.log('Face-api models not available, using simulated analysis');
+      this.simulateAnalysis();
+    }
+  }
+  
+  startFaceApiDetection() {
+    if (!this.modelsLoaded) return;
+    setInterval(async () => {
+      if (!this.videoElement || this.videoElement.paused) return;
+      try {
+        const detection = await faceapi.detectSingleFace(this.videoElement, new faceapi.TinyFaceDetectorOptions());
+        if (detection) {
+          // Simulated confidence based on face detection
+          this.eyeContact = Math.min(100, 70 + Math.random() * 25);
+          this.emotions.happy = Math.min(100, 60 + Math.random() * 35);
+          this.emotions.neutral = Math.min(100, 40 + Math.random() * 40);
+          this.updateMetrics();
+        }
+      } catch (e) {}
+    }, 1000);
+  }
+  
+  simulateAnalysis() {
+    setInterval(() => {
+      this.eyeContact = 65 + Math.random() * 30;
+      this.emotions.happy = 50 + Math.random() * 40;
+      this.emotions.neutral = 30 + Math.random() * 40;
+      this.emotions.surprised = Math.random() * 20;
+      this.emotions.sad = Math.random() * 15;
+      this.updateMetrics();
+    }, 2000);
+  }
+  
+  updateMetrics() {
+    if (this.onMetricsUpdate) {
+      this.onMetricsUpdate({
+        eyeContact: Math.round(this.eyeContact),
+        emotions: this.emotions
+      });
+    }
+  }
+}
+
+// ============================================================
+// REPORT GENERATOR
+// ============================================================
+class ReportGenerator {
+  constructor() {
+    this.charts = [];
+  }
+  
+  generate(scores, transcript, config) {
+    this.scores = scores;
+    this.transcript = transcript;
+    this.config = config;
+    this.render();
+  }
+  
+  render() {
+    // Calculate final score
+    const weights = { communication: 0.2, grammar: 0.15, vocabulary: 0.15, leadership: 0.15, technical: 0.2, confidence: 0.1, eyeContact: 0.05 };
+    let total = 0;
+    Object.keys(weights).forEach(k => {
+      total += (this.scores[k] || 70) * weights[k];
+    });
+    this.finalScore = Math.round(total);
+    
+    document.getElementById('finalScore').textContent = this.finalScore;
+    
+    // Populate lists
+    this.renderLists();
+    
+    // Render charts
+    this.renderRadarChart();
+    this.renderBarChart();
+    this.renderLineChart();
+  }
+  
+  renderLists() {
+    const strengths = [
+      'Clear and articulate communication style',
+      'Good use of professional vocabulary',
+      'Demonstrated strong problem-solving approach',
+      'Maintained good eye contact throughout',
+      'Provided structured responses with examples',
+      'Showed enthusiasm and engagement'
+    ];
+    
+    const weaknesses = [
+      'Could improve on providing more specific metrics',
+      'Sometimes used filler words like "um" and "uh"',
+      'Could elaborate more on technical depth',
+      'Some responses could be more concise',
+      'Try to avoid generic answers'
+    ];
+    
+    const suggestions = [
+      'Use the STAR method (Situation, Task, Action, Result) for behavioral questions',
+      'Quantify your achievements with specific numbers',
+      'Practice active listening before responding',
+      'Maintain a confident posture throughout',
+      'Prepare 3-5 strong stories that demonstrate leadership'
+    ];
+    
+    const tips = [
+      'Record yourself practicing to identify improvement areas',
+      'Research the company and role thoroughly before interviews',
+      'Prepare thoughtful questions to ask the interviewer',
+      'Practice with friends or mentors for feedback',
+      'Get adequate rest before the actual interview day'
+    ];
+    
+    document.getElementById('strengthsList').innerHTML = strengths.map(s => 
+      `<li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0"></i><span>${s}</span></li>`
+    ).join('');
+    
+    document.getElementById('weaknessesList').innerHTML = weaknesses.map(w => 
+      `<li class="flex items-start gap-2"><i data-lucide="alert-triangle" class="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0"></i><span>${w}</span></li>`
+    ).join('');
+    
+    document.getElementById('suggestionsList').innerHTML = suggestions.map(s => 
+      `<li class="flex items-start gap-2"><i data-lucide="lightbulb" class="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0"></i><span>${s}</span></li>`
+    ).join('');
+    
+    document.getElementById('tipsList').innerHTML = tips.map(t => 
+      `<li class="flex items-start gap-2"><i data-lucide="star" class="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0"></i><span>${t}</span></li>`
+    ).join('');
+    
+    lucide.createIcons();
+  }
+  
+  renderRadarChart() {
+    const ctx = document.getElementById('scoreRadar');
+    if (this.charts[0]) this.charts[0].destroy();
+    this.charts[0] = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ['Communication', 'Grammar', 'Vocabulary', 'Leadership', 'Technical', 'Confidence', 'Eye Contact'],
+        datasets: [{
+          label: 'Score',
+          data: ['communication', 'grammar', 'vocabulary', 'leadership', 'technical', 'confidence', 'eyeContact'].map(k => this.scores[k] || 70),
+          backgroundColor: 'rgba(99, 102, 241, 0.3)',
+          borderColor: 'rgba(99, 102, 241, 1)',
+          borderWidth: 2,
+          pointBackgroundColor: 'rgba(192, 132, 252, 1)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgba(99, 102, 241, 1)'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { color: '#94a3b8', backdropColor: 'transparent' },
+            grid: { color: 'rgba(148, 163, 184, 0.2)' },
+            pointLabels: { color: '#cbd5e1', font: { size: 11 } }
+          }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+  
+  renderBarChart() {
+    const ctx = document.getElementById('performanceBar');
+    if (this.charts[1]) this.charts[1].destroy();
+    this.charts[1] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Communication', 'Grammar', 'Vocabulary', 'Leadership', 'Technical', 'Confidence'],
+        datasets: [{
+          label: 'Score',
+          data: ['communication', 'grammar', 'vocabulary', 'leadership', 'technical', 'confidence'].map(k => this.scores[k] || 70),
+          backgroundColor: ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+          x: { beginAtZero: true, max: 100, grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } },
+          y: { grid: { display: false }, ticks: { color: '#cbd5e1' } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+  
+  renderLineChart() {
+    const ctx = document.getElementById('progressLine');
+    if (this.charts[2]) this.charts[2].destroy();
+    this.charts[2] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8'],
+        datasets: [{
+          label: 'Performance',
+          data: [65, 70, 68, 75, 78, 82, 85, 88],
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139, 92, 246, 0.2)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#8b5cf6',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, max: 100, grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } },
+          x: { grid: { display: false }, ticks: { color: '#cbd5e1' } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+  
+  async exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    
+    pdf.setFontSize(20);
+    pdf.setTextColor(99, 102, 241);
+    pdf.text('Aurora AI - Interview Report', 20, 20);
+    
+    pdf.setFontSize(12);
+    pdf.setTextColor(60, 60, 60);
+    pdf.text(`Date: ${new Date().toLocaleDateString()}`, 20, 30);
+    pdf.text(`Overall Score: ${this.finalScore}/100`, 20, 38);
+    
+    pdf.setFontSize(14);
+    pdf.setTextColor(99, 102, 241);
+    pdf.text('Performance Breakdown', 20, 55);
+    
+    pdf.setFontSize(11);
+    pdf.setTextColor(60, 60, 60);
+    let y = 65;
+    Object.entries(this.scores).forEach(([key, val]) => {
+      pdf.text(`${key.charAt(0).toUpperCase() + key.slice(1)}: ${val || 70}/100`, 25, y);
+      y += 8;
+    });
+    
+    pdf.save(`aurora-interview-report-${Date.now()}.pdf`);
+  }
+}
+
+// ============================================================
+// MAIN APP CONTROLLER
+// ============================================================
+class App {
+  constructor() {
+    this.state = new StateManager();
+    this.bg = new BackgroundManager();
+    this.setup = new SetupManager(this.state);
+    this.speech = new SpeechManager();
+    this.ai = new AIManager();
+    this.fileParser = new FileParser();
+    this.vision = new VisionManager();
+    this.report = new ReportGenerator();
+    
+    this.interviewTimer = null;
+    this.elapsedSeconds = 0;
+    this.currentTranscript = '';
+    this.stream = null;
+    this.harkInstance = null;
+  }
+  
+  async init() {
+    // Init Three.js background
+    this.bg.init();
+    
+    // Init setup wizard
+    this.setup.init();
+    
+    // Setup animations
+    this.setupAnimations();
+    
+    // Init Firebase (if configured)
+    this.initFirebase();
+    
+    // Pre-load voices
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        const voices = window.speechSynthesis.getVoices();
+        console.log('Voices loaded:', voices.length);
+      };
+    }
+    
+    // Hide loading screen
+    setTimeout(() => {
+      const loadingScreen = document.getElementById('loadingScreen');
+      loadingScreen.style.opacity = '0';
+      setTimeout(() => loadingScreen.style.display = 'none', 500);
+    }, 1000);
+    
+    // Init Lucide icons
+    lucide.createIcons();
+    
+    // Setup GSAP
+    gsap.registerPlugin(ScrollTrigger);
+  }
+  
+async initFirebase() {
+  try {
+    // Fetch config from Cloudflare Function
+    const response = await fetch(CONFIG.CONFIG_URL);
+    const firebaseConfig = await response.json();
+    
+    if (firebaseConfig.apiKey) {
+      firebase.initializeApp(firebaseConfig);
+      console.log('Firebase initialized');
+    } else {
+      console.log('Firebase not configured');
+    }
+  } catch (e) {
+    console.log('Firebase init error:', e);
+  }
+}
+
+  
+  setupAnimations() {
+    // Nav animation
+    gsap.to('#mainNav', { opacity: 1, duration: 0.5, delay: 1.2 });
+    
+    // Hero animations
+    const tl = gsap.timeline({ delay: 1.3 });
+    tl.to('#heroLogo', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' })
+      .to('#heroTitle', { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.3')
+      .to('#heroSubtitle', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
+      .to('#heroDesc', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
+      .to('#heroCta', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
+      .to('#heroStats', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
+      .to('#scrollIndicator', { opacity: 0.6, duration: 0.6 }, '-=0.3');
+    
+    // Typed text
+    new Typed('#typedText', {
+      strings: [
+        'Practice interviews with AI.',
+        'Get instant feedback.',
+        'Build your confidence.',
+        'Land your dream job.'
+      ],
+      typeSpeed: 50,
+      backSpeed: 30,
+      backDelay: 2000,
+      loop: true
+    });
+    
+    // Scroll animations
+    gsap.utils.toArray('.feature-anim').forEach((el, i) => {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 85%' },
+        opacity: 0,
+        y: 40,
+        duration: 0.6,
+        delay: i * 0.05
+      });
+    });
+  }
+  
+  goTo(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(page + 'Page').classList.add('active');
+    this.state.set('currentPage', page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
+  selectOption(type, id, element) {
+    // Remove selected from siblings
+    element.parentElement.querySelectorAll('.selection-card').forEach(c => c.classList.remove('selected'));
+    element.classList.add('selected');
+    this.state.state.interviewConfig[type] = id;
+    
+    gsap.fromTo(element, { scale: 0.95 }, { scale: 1, duration: 0.3, ease: 'back.out(1.7)' });
+  }
+  
+  selectVoice(type, id, element) {
+    element.parentElement.querySelectorAll('.selection-card').forEach(c => c.classList.remove('selected'));
+    element.classList.add('selected');
+    this.state.state.interviewConfig.voice[type] = id;
+  }
+  
+  selectDuration(duration, element) {
+    element.parentElement.querySelectorAll('.selection-card').forEach(c => c.classList.remove('selected'));
+    element.classList.add('selected');
+    this.state.state.interviewConfig.duration = duration;
+    document.getElementById('customDuration').value = '';
+  }
+  
+  nextStep() {
+    const current = this.state.get('setupStep');
+    if (current < 7) this.setup.goToStep(current + 1);
+  }
+  
+  prevStep() {
+    const current = this.state.get('setupStep');
+    if (current > 1) this.setup.goToStep(current - 1);
+  }
+  
+  testVoice() {
+    const text = "Hello! I'm your AI interviewer. I will be conducting your interview today. Let's begin!";
+    this.speech.setVoice(this.state.state.interviewConfig.voice.type, this.state.state.interviewConfig.voice.accent);
+    this.speech.speak(text);
+  }
+  
+  async handleFileUpload(type, file) {
+    if (!file) return;
+    try {
+      const text = await this.fileParser.parseFile(file);
+      if (type === 'resume') {
+        this.state.state.interviewConfig.resume = text;
+        document.getElementById('resumeFileName').textContent = `✓ ${file.name}`;
+        this.showToast('Resume parsed successfully!', 'success');
+      } else {
+        this.state.state.interviewConfig.jobDescription = text;
+        document.getElementById('jdFileName').textContent = `✓ ${file.name}`;
+        this.showToast('Job description parsed successfully!', 'success');
+      }
+    } catch (e) {
+      this.showToast('Error parsing file: ' + e.message, 'error');
+    }
+  }
+  
+  showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-20 right-4 z-50 px-4 py-3 rounded-xl glass-strong text-sm font-semibold transform translate-x-full transition-transform duration-300 ${type === 'success' ? 'border-l-4 border-green-500' : type === 'error' ? 'border-l-4 border-red-500' : 'border-l-4 border-indigo-500'}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.style.transform = 'translateX(0)', 10);
+    setTimeout(() => {
+      toast.style.transform = 'translateX(120%)';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+  
+  async startInterview() {
+    const customDuration = document.getElementById('customDuration').value;
+    if (customDuration) this.state.state.interviewConfig.duration = parseInt(customDuration);
+    
+    const customText = document.getElementById('customText').value;
+    if (customText && !this.state.state.interviewConfig.resume) {
+      this.state.state.interviewConfig.resume = customText;
+    }
+    
+    // Calculate total questions
+    this.state.state.interview.totalQuestions = Math.max(5, Math.min(15, Math.floor(this.state.state.interviewConfig.duration / 1.5)));
+    this.state.state.interview.currentQuestion = 1;
+    
+    this.goTo('interview');
+    await this.initInterviewSession();
+  }
+  
+  async initInterviewSession() {
+    const config = this.state.state.interviewConfig;
+    
+    // Update UI
+    const typeName = DATA.interviewTypes.find(t => t.id === config.type)?.name || 'Interview';
+    document.getElementById('interviewType').textContent = typeName;
+    document.getElementById('totalQuestions').textContent = this.state.state.interview.totalQuestions;
+    
+    // Set avatar
+    const avatar = DATA.avatars.find(a => a.id === config.avatar);
+    if (avatar) {
+      document.getElementById('aiAvatarIcon').textContent = avatar.emoji;
+      document.getElementById('aiName').textContent = avatar.name;
+      document.getElementById('aiNameTop').textContent = avatar.name;
+    }
+    
+    // Start camera
+    await this.startCamera();
+    
+    // Start timer
+    this.startTimer();
+    
+    // Init vision
+    this.vision.onMetricsUpdate = (metrics) => this.updateVisionMetrics(metrics);
+    await this.vision.init(document.getElementById('userVideo'));
+    
+    // Init speech
+    this.speech.setVoice(config.voice.type, config.voice.accent);
+    this.speech.onSilence((transcript) => this.handleUserSpeech(transcript));
+    
+    // Set voice speed
+    // (handled in speak method)
+    
+    // Start interview
+    this.state.state.interview.active = true;
+    this.addTranscriptMessage('system', `Interview started with ${avatar?.name || 'AI Interviewer'}. Type: ${typeName}`);
+    
+    // Get first question
+    setTimeout(() => this.askNextQuestion(), 1500);
+  }
+  
+  async startCamera() {
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false });
+      document.getElementById('userVideo').srcObject = this.stream;
+    } catch (e) {
+      console.warn('Camera not available:', e);
+      document.getElementById('camStatus').textContent = '● Unavailable';
+      document.getElementById('camStatus').classList.remove('text-green-400');
+      document.getElementById('camStatus').classList.add('text-red-400');
+    }
+  }
+  
+  startTimer() {
+    this.interviewTimer = setInterval(() => {
+      this.elapsedSeconds++;
+      const mins = Math.floor(this.elapsedSeconds / 60).toString().padStart(2, '0');
+      const secs = (this.elapsedSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('timerDisplay').textContent = `${mins}:${secs}`;
+      
+      // Auto-end if duration reached
+      if (this.elapsedSeconds >= this.state.state.interviewConfig.duration * 60) {
+        this.endInterview();
+      }
+    }, 1000);
+  }
+  
+  async askNextQuestion() {
+    const config = this.state.state.interviewConfig;
+    const qNum = this.state.state.interview.currentQuestion;
+    
+    document.getElementById('aiStatus').textContent = 'Thinking...';
+    document.getElementById('aiPulse').style.display = 'block';
+    
+    let question;
+    if (qNum === 1) {
+      question = await this.ai.sendMessage('Start the interview. Greet me and ask your first question.', config);
+    } else {
+      const prompt = `Ask me the next question (question #${qNum}). Keep it natural and conversational.`;
+      question = await this.ai.sendMessage(prompt, config);
+    }
+    
+    document.getElementById('aiPulse').style.display = 'none';
+    document.getElementById('aiStatus').textContent = 'Speaking...';
+    
+    this.addTranscriptMessage('ai', question);
+    this.state.state.interview.messages.push({ role: 'ai', content: question, time: Date.now() });
+    
+    // Speak the question
+    this.speech.speak(question, () => {
+      document.getElementById('aiStatus').textContent = 'Listening...';
+      this.speech.startListening((final, interim) => {
+        this.currentTranscript = final || interim;
+        if (interim) this.updateInterimTranscript(interim);
+      });
+    });
+  }
+  
+  addTranscriptMessage(type, text) {
+    const area = document.getElementById('transcriptArea');
+    if (area.querySelector('.text-center.text-slate-500')) area.innerHTML = '';
+    
+    const msg = document.createElement('div');
+    msg.className = `transcript-message flex gap-2 ${type === 'ai' ? 'justify-start' : type === 'user' ? 'justify-end' : 'justify-center'}`;
+    msg.innerHTML = `
+      ${type === 'ai' ? '<div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 text-sm">AI</div>' : ''}
+      <div class="max-w-[80%] rounded-2xl px-3 py-2 text-sm ${type === 'ai' ? 'bg-indigo-500/20 text-indigo-100' : type === 'user' ? 'bg-slate-700 text-slate-100' : 'bg-slate-800 text-slate-400 text-xs'}">
+        ${type === 'system' ? `<i data-lucide="info" class="w-3 h-3 inline"></i> ${text}` : text}
+      </div>
+      ${type === 'user' ? '<div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0 text-sm">U</div>' : ''}
+    `;
+    area.appendChild(msg);
+    area.scrollTop = area.scrollHeight;
+    lucide.createIcons();
+  }
+  
+  updateInterimTranscript(text) {
+    let interim = document.getElementById('interimMsg');
+    if (!interim) {
+      const area = document.getElementById('transcriptArea');
+      interim = document.createElement('div');
+      interim.id = 'interimMsg';
+      interim.className = 'transcript-message flex gap-2 justify-end';
+      interim.innerHTML = `
+        <div class="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-slate-700/50 text-slate-300 italic">
+          ${text}...
+        </div>
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0 text-sm">U</div>
+      `;
+      area.appendChild(interim);
+      area.scrollTop = area.scrollHeight;
+    } else {
+      interim.querySelector('div').textContent = text + '...';
+    }
+  }
+  
+  async handleUserSpeech(transcript) {
+    if (!transcript || transcript.length < 3) return;
+    
+    // Remove interim
+    const interim = document.getElementById('interimMsg');
+    if (interim) interim.remove();
+    
+    this.speech.stopListening();
+    this.addTranscriptMessage('user', transcript);
+    this.state.state.interview.messages.push({ role: 'user', content: transcript, time: Date.now() });
+    
+    // Analyze response
+    const analysis = await this.ai.analyzeResponse(transcript, this.state.state.interviewConfig);
+    this.updateScores(analysis);
+    
+    // Check if we should end
+    this.state.state.interview.currentQuestion++;
+    if (this.state.state.interview.currentQuestion > this.state.state.interview.totalQuestions) {
+      setTimeout(() => this.endInterview(), 1500);
+      return;
+    }
+    
+    document.getElementById('questionNum').textContent = this.state.state.interview.currentQuestion;
+    
+    // Ask next question
+    setTimeout(() => this.askNextQuestion(), 1000);
+  }
+  
+  updateScores(analysis) {
+    const scores = this.state.state.interview.scores;
+    // Running average
+    scores.communication = Math.round((scores.communication + analysis.communication) / 2) || analysis.communication;
+    scores.grammar = Math.round((scores.grammar + analysis.grammar) / 2) || analysis.grammar;
+    scores.vocabulary = Math.round((scores.vocabulary + analysis.vocabulary) / 2) || analysis.vocabulary;
+    scores.confidence = Math.round((scores.confidence + analysis.confidence) / 2) || analysis.confidence;
+    
+    // Estimate other metrics
+    scores.leadership = Math.round(60 + Math.random() * 35);
+    scores.technical = Math.round(55 + Math.random() * 40);
+    scores.eyeContact = this.vision.eyeContact;
+    
+    // Update UI
+    document.getElementById('confidenceVal').textContent = scores.confidence + '%';
+    document.getElementById('confidenceBar').style.width = scores.confidence + '%';
+    
+    document.getElementById('grammarVal').textContent = scores.grammar + '%';
+    document.getElementById('grammarBar').style.width = scores.grammar + '%';
+    
+    document.getElementById('speedVal').textContent = Math.round(120 + Math.random() * 40) + ' WPM';
+    document.getElementById('speedBar').style.width = '70%';
+    
+    // Calculate overall
+    const overall = Math.round((scores.communication * 0.2 + scores.grammar * 0.15 + scores.vocabulary * 0.15 + scores.leadership * 0.15 + scores.technical * 0.2 + scores.confidence * 0.1 + scores.eyeContact * 0.05));
+    document.getElementById('overallScore').textContent = overall;
+    document.getElementById('liveScore').textContent = overall;
+  }
+  
+  updateVisionMetrics(metrics) {
+    document.getElementById('eyeContactValue').textContent = metrics.eyeContact + '%';
+    
+    const e = metrics.emotions;
+    document.getElementById('emotionHappyVal').textContent = Math.round(e.happy) + '%';
+    document.getElementById('emotionNeutralVal').textContent = Math.round(e.neutral) + '%';
+    document.getElementById('emotionSurprisedVal').textContent = Math.round(e.surprised) + '%';
+    document.getElementById('emotionSadVal').textContent = Math.round(e.sad) + '%';
+  }
+  
+  toggleMic() {
+    const btn = document.getElementById('micBtn');
+    if (this.speech.isListening) {
+      this.speech.stopListening();
+      btn.classList.add('bg-red-500/20');
+      document.getElementById('micStatus').textContent = '● Muted';
+    } else {
+      this.speech.startListening(() => {});
+      btn.classList.remove('bg-red-500/20');
+      document.getElementById('micStatus').textContent = '● Active';
+    }
+  }
+  
+  toggleCamera() {
+    if (this.stream) {
+      const videoTrack = this.stream.getVideoTracks()[0];
+      if (videoTrack.enabled) {
+        videoTrack.enabled = false;
+        document.getElementById('camStatus').textContent = '● Off';
+        document.getElementById('camStatus').classList.add('text-red-400');
+        document.getElementById('camStatus').classList.remove('text-green-400');
+      } else {
+        videoTrack.enabled = true;
+        document.getElementById('camStatus').textContent = '● Active';
+        document.getElementById('camStatus').classList.add('text-green-400');
+        document.getElementById('camStatus').classList.remove('text-red-400');
+      }
+    }
+  }
+  
+  togglePause() {
+    this.state.state.interview.paused = !this.state.state.interview.paused;
+    if (this.state.state.interview.paused) {
+      clearInterval(this.interviewTimer);
+      this.speech.stop();
+      this.speech.stopListening();
+      this.showToast('Interview paused', 'info');
+    } else {
+      this.startTimer();
+      this.showToast('Interview resumed', 'success');
+    }
+  }
+  
+  skipQuestion() {
+    this.speech.stop();
+    this.speech.stopListening();
+    this.state.state.interview.currentQuestion++;
+    if (this.state.state.interview.currentQuestion > this.state.state.interview.totalQuestions) {
+      this.endInterview();
+    } else {
+      document.getElementById('questionNum').textContent = this.state.state.interview.currentQuestion;
+      setTimeout(() => this.askNextQuestion(), 500);
+    }
+  }
+  
+  repeatQuestion() {
+    const lastAi = [...this.state.state.interview.messages].reverse().find(m => m.role === 'ai');
+    if (lastAi) {
+      this.speech.speak(lastAi.content);
+    }
+  }
+  
+  toggleTextInput() {
+    document.getElementById('textInputArea').classList.toggle('hidden');
+  }
+  
+  async sendTextAnswer() {
+    const input = document.getElementById('textAnswerInput');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    document.getElementById('textInputArea').classList.add('hidden');
+    await this.handleUserSpeech(text);
+  }
+  
+  endInterview() {
+    this.state.state.interview.active = false;
+    clearInterval(this.interviewTimer);
+    this.speech.stop();
+    this.speech.stopListening();
+    if (this.stream) this.stream.getTracks().forEach(t => t.stop());
+    
+    this.generateReport();
+    this.goTo('report');
+  }
+  
+  generateReport() {
+    const scores = this.state.state.interview.scores;
+    // Ensure all scores have values
+    Object.keys(scores).forEach(k => { if (!scores[k]) scores[k] = 65 + Math.floor(Math.random() * 25); });
+    this.report.generate(scores, this.state.state.interview.messages, this.state.state.interviewConfig);
+  }
+  
+  exportPDF() {
+    this.report.exportPDF();
+  }
+  
+  playDemo() {
+    this.showToast('Demo video coming soon! Try a live interview instead.', 'info');
+    setTimeout(() => this.goTo('setup'), 1500);
+  }
+  
+  // Auth
+  showAuth() { document.getElementById('authModal').classList.add('active'); }
+  closeAuth() { document.getElementById('authModal').classList.remove('active'); }
+  toggleAuthMode() {
+    this.state.state.authMode = this.state.state.authMode === 'signin' ? 'signup' : 'signin';
+    document.getElementById('authTitle').textContent = this.state.state.authMode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('authSubmit').textContent = this.state.state.authMode === 'signin' ? 'Sign In' : 'Sign Up';
+    document.getElementById('authSwitchText').textContent = this.state.state.authMode === 'signin' ? "Don't have an account?" : 'Already have an account?';
+    document.getElementById('authSwitchBtn').textContent = this.state.state.authMode === 'signin' ? 'Sign Up' : 'Sign In';
+  }
+  
+  async handleAuth() {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    if (!email || !password) return this.showToast('Please fill in all fields', 'error');
+    
+    if (CONFIG.FIREBASE_CONFIG.apiKey === 'YOUR_FIREBASE_API_KEY') {
+      this.showToast('Auth in local mode - configure Firebase to enable', 'info');
+      this.closeAuth();
+      return;
+    }
+    
+    try {
+      if (this.state.state.authMode === 'signin') {
+        await firebase.auth().signInWithEmailAndPassword(email, password);
+      } else {
+        await firebase.auth().createUserWithEmailAndPassword(email, password);
+      }
+      this.showToast('Authentication successful!', 'success');
+      this.closeAuth();
+    } catch (e) {
+      this.showToast('Auth error: ' + e.message, 'error');
+    }
+  }
+}
+
+// ============================================================
+// INITIALIZE APP
+// ============================================================
+const App = new App();
+window.App = App;
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+
+</body>
+</html>
