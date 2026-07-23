@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Aurora AI Interview Simulator</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E✨%3C/text%3E%3C/svg%3E">
 
 <!-- External Libraries -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -19,7 +20,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hark@1.2.0/hark.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hark@1.2.0/hark.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
@@ -2859,8 +2860,7 @@ async initFirebase() {
 // ============================================================
 // INITIALIZE APP
 // ============================================================
-const App = new App();
-window.App = App;
+window.App = new App();
 document.addEventListener('DOMContentLoaded', () => App.init());
 </script>
 
