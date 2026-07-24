@@ -2860,8 +2860,13 @@ async initFirebase() {
 // ============================================================
 // INITIALIZE APP
 // ============================================================
-window.App = new App();
-document.addEventListener('DOMContentLoaded', () => App.init());
+let App;
+document.addEventListener('DOMContentLoaded', () => {
+  App = new App();
+  window.App = App;
+  App.init();
+});
+
 </script>
 
 </body>
