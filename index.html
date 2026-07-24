@@ -489,7 +489,7 @@ input[type="range"]::-webkit-slider-thumb {
         
         <!-- Auth Buttons -->
         <div class="flex items-center gap-3">
-          <button id="authBtn" class="btn-secondary text-sm py-2 px-4">Sign In</button>
+          <button id="authBtn" onclick="App.showAuth()" class="btn-secondary text-sm py-2 px-4">Sign In</button>
           <button onclick="App.goTo('setup')" class="btn-primary text-sm py-2 px-4 hidden sm:block">Start Free</button>
         </div>
       </div>
@@ -2313,7 +2313,7 @@ class ReportGenerator {
 // ============================================================
 // MAIN APP CONTROLLER
 // ============================================================
-class App {
+class AuroraApp {
   constructor() {
     this.state = new StateManager();
     this.bg = new BackgroundManager();
@@ -2861,7 +2861,7 @@ async initFirebase() {
 // INITIALIZE APP
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  window.App = new App();
+  window.App = new AuroraApp();
   window.App.init();
 });
 
